@@ -9,6 +9,9 @@
 </head>
 
 <body>
+
+  <div data-events-placeholder></div>
+
   <form>
     <label for="title">Title</label>
     <input type="text" name="title">
@@ -26,6 +29,19 @@
   </form>
 
   <script>
+
+    const eventsDisplay = document.querySelector('[data-events-placeholder]');
+
+    // Run fetch request to server to get list of events
+    fetch('http://localhost:5000')
+      .then(response => response.json())
+      .then(data => {
+        // inject message into placeholder
+        const { message } = data;
+        eventsDisplay.innerHTML = message;
+      })
+      .catch(error => console.log(error));
+
     const formEl = document.querySelector('form');
     const formSubmit = document.querySelector('button');
 
