@@ -47,6 +47,19 @@ app.post('/create-event', (req, res) => {
     });
 })
 
+app.delete('/:id', (req, res) => {
+  // Deletes event based on event ID
+  const id = req.params.id;
+  Event.findByIdAndDelete(id)
+    .then(result => {
+      console.log(result);
+      res.status(200).json('Successfully deleted event.');
+    })
+    .catch(err => {
+      res.status(400).json(err.message);
+    })
+});
+
 
 
 // endpoints

@@ -8,10 +8,22 @@
   <title>Events Full Stack App</title>
 
   <style>
+    [data-events-placeholder] {
+      max-width: 500px;
+    }
+
     .event {
       border-left: 5px solid crimson;
       padding-left: 30px;
-      margin: 20px 0;
+      margin: 50px 0;
+      position: relative;
+    }
+
+    .event img {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 25px;
     }
 
   </style>
@@ -50,7 +62,10 @@
           // inject message into placeholder
           if (data.message) {
             eventsDisplay.innerHTML = message;
+            return;
           }
+
+          eventsDisplay.innerHTML = '';
 
           // Output divs for each event
           data.forEach(event => {
@@ -58,38 +73,42 @@
 
             const container = document.createElement('div');
             container.classList.add('event');
-            container.id = event.id;
+            container.id = event._id;
 
             const heading = document.createElement('h1');
             heading.innerHTML = event.title;
 
+            const deleteBtn = document.createElement('span');
+            deleteBtn.classList.add('.delete');
+            const deleteIcon = document.createElement('img');
+            deleteIcon.src = './trash-can.png';
+
+            deleteBtn.append(deleteIcon);
+
             container.append(heading);
+            container.append(deleteBtn);
+
             eventFragment.append(container);
 
             eventsDisplay.append(eventFragment);
+
+            deleteBtn.addEventListener('click', (e) => {
+              const icon = e.target;
+              const event = icon.closest('.event');
+              const id = event.id;
+
+              // fetch request to delete endpoint
+              fetch(`http://localhost:5000/${id}`, {
+                method: 'DELETE',
+              })
+                .then(result => {
+                  console.log(result);
+
+                  readEvents();
+                })
+                .catch(err => console.log(err));
+            })
           })
-        })
-        .catch(error => console.log(error));
-    }
-
-    function readLastEvent() {
-      fetch('http://localhost:5000')
-        .then(response => response.json())
-        .then(data => {
-          const event = data[data.length - 1];
-          const eventFragment = new DocumentFragment();
-
-          const container = document.createElement('div');
-          container.classList.add('event');
-          container.id = event.id;
-
-          const heading = document.createElement('h1');
-          heading.innerHTML = event.title;
-
-          container.append(heading);
-          eventFragment.append(container);
-
-          eventsDisplay.append(eventFragment);
         })
         .catch(error => console.log(error));
     }
@@ -100,6 +119,7 @@
     const formSubmit = document.querySelector('button');
 
     formSubmit.addEventListener('click', (e) => {
+
       e.preventDefault();
 
       const formData = new FormData(formEl);
@@ -118,10 +138,10 @@
 
           formEl.reset();
 
-          readLastEvent();
+          readEvents();
         })
         .catch(error => alert(error));
-    })
+    });
   </script>
 </body>
 
