@@ -24,25 +24,27 @@ mongoose.connect(dbURI)
 app.get('/', (req, res) => {
   Event.find()
     .then(result => {
-      console.log(result);
-      // If result is empty, no events found. Create an event.
-      res.status(200).json({ message: 'No events found. Create an event.'})
+      if (!result) {
+        res.status(400).json({ message: 'No events found. Create an event.'})
+      }
+      res.status(200).json(result);
     })
     .catch(err => console.log(err));
-  // model
-  // schema
-  // looks in DB
-  // need to send data to front end?
-  // returns error
 })
 
 app.post('/create-event', (req, res) => {
   console.log(req.body);
-  res.send(req.body);
 
-  // save events to DB
-  // can't redirect the front end
-  // pass redirect url back to request
+  // Save event to DB
+  const event = new Event(req.body);
+  event.save()
+    .then(result => {
+      console.log(result);
+      res.status(200).json('Successfully created event.');
+    })
+    .catch(err => {
+      res.status(400).json(err.message);
+    });
 })
 
 

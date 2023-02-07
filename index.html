@@ -6,6 +6,15 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Events Full Stack App</title>
+
+  <style>
+    .event {
+      border-left: 5px solid crimson;
+      padding-left: 30px;
+      margin: 20px 0;
+    }
+
+  </style>
 </head>
 
 <body>
@@ -33,14 +42,59 @@
     const eventsDisplay = document.querySelector('[data-events-placeholder]');
 
     // Run fetch request to server to get list of events
-    fetch('http://localhost:5000')
-      .then(response => response.json())
-      .then(data => {
-        // inject message into placeholder
-        const { message } = data;
-        eventsDisplay.innerHTML = message;
-      })
-      .catch(error => console.log(error));
+    function readEvents() {
+      fetch('http://localhost:5000')
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          // inject message into placeholder
+          if (data.message) {
+            eventsDisplay.innerHTML = message;
+          }
+
+          // Output divs for each event
+          data.forEach(event => {
+            const eventFragment = new DocumentFragment();
+
+            const container = document.createElement('div');
+            container.classList.add('event');
+            container.id = event.id;
+
+            const heading = document.createElement('h1');
+            heading.innerHTML = event.title;
+
+            container.append(heading);
+            eventFragment.append(container);
+
+            eventsDisplay.append(eventFragment);
+          })
+        })
+        .catch(error => console.log(error));
+    }
+
+    function readLastEvent() {
+      fetch('http://localhost:5000')
+        .then(response => response.json())
+        .then(data => {
+          const event = data[data.length - 1];
+          const eventFragment = new DocumentFragment();
+
+          const container = document.createElement('div');
+          container.classList.add('event');
+          container.id = event.id;
+
+          const heading = document.createElement('h1');
+          heading.innerHTML = event.title;
+
+          container.append(heading);
+          eventFragment.append(container);
+
+          eventsDisplay.append(eventFragment);
+        })
+        .catch(error => console.log(error));
+    }
+
+    readEvents();
 
     const formEl = document.querySelector('form');
     const formSubmit = document.querySelector('button');
@@ -59,8 +113,14 @@
         body: data
       })
         .then(response => response.json())
-        .then(data => console.log(data))
-        .catch(error => console.log(error));
+        .then(data => {
+          console.log(data);
+
+          formEl.reset();
+
+          readLastEvent();
+        })
+        .catch(error => alert(error));
     })
   </script>
 </body>
