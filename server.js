@@ -10,6 +10,7 @@ const Event = require('./model/Event');
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 const dbURI = 'mongodb+srv://events:test12345@fullstack.icomaol.mongodb.net/?retryWrites=true&w=majority';
 
@@ -54,6 +55,19 @@ app.delete('/:id', (req, res) => {
     .then(result => {
       console.log(result);
       res.status(200).json('Successfully deleted event.');
+    })
+    .catch(err => {
+      res.status(400).json(err.message);
+    })
+});
+
+app.put('/:id', (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  Event.findByIdAndUpdate(id, req.body, { runValidators: true, })
+    .then(result => {
+      console.log(result);
+      res.status(200).json('Successfully updated event.');
     })
     .catch(err => {
       res.status(400).json(err.message);

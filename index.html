@@ -19,11 +19,22 @@
       position: relative;
     }
 
-    .event img {
+    .event .delete {
       position: absolute;
       top: 0;
       right: 0;
       width: 25px;
+    }
+
+    .event .edit {
+      position: absolute;
+      top: 0;
+      right: 40px;
+      width: 25px;
+    }
+
+    .event img {
+      max-width: 100%;
     }
 
   </style>
@@ -33,7 +44,7 @@
 
   <div data-events-placeholder></div>
 
-  <form>
+  <form class="create-form">
     <label for="title">Title</label>
     <input type="text" name="title">
 
@@ -49,9 +60,29 @@
     <button>Submit</button>
   </form>
 
+  <form class="edit-form" style="display: none">
+    <label for="title">Title</label>
+    <input type="text" name="title">
+
+    <label for="location">Location</label>
+    <input type="text" name="location">
+
+    <label for="date">Date</label>
+    <input type="text" name="date">
+
+    <label for="time">Time</label>
+    <input type="text" name="time">
+
+    <button>Update event</button>
+  </form>
+
   <script>
 
     const eventsDisplay = document.querySelector('[data-events-placeholder]');
+    const createFormEl = document.querySelector('.create-form');
+    const createFormSubmit = createFormEl.querySelector('button');
+    const editFormEl = document.querySelector('.edit-form');
+    const editFormSubmit = editFormEl.querySelector('button');
 
     // Run fetch request to server to get list of events
     function readEvents() {
@@ -79,14 +110,22 @@
             heading.innerHTML = event.title;
 
             const deleteBtn = document.createElement('span');
-            deleteBtn.classList.add('.delete');
+            deleteBtn.classList.add('delete');
             const deleteIcon = document.createElement('img');
             deleteIcon.src = './trash-can.png';
 
             deleteBtn.append(deleteIcon);
 
+            const editBtn = document.createElement('span');
+            editBtn.classList.add('edit');
+            const editIcon = document.createElement('img');
+            editIcon.src = './edit.svg';
+
+            editBtn.append(editIcon);
+
             container.append(heading);
             container.append(deleteBtn);
+            container.append(editBtn);
 
             eventFragment.append(container);
 
@@ -107,6 +146,54 @@
                   readEvents();
                 })
                 .catch(err => console.log(err));
+            });
+
+            editBtn.addEventListener('click', (e) => {
+              const icon = e.target;
+              const event = icon.closest('.event');
+              const id = event.id;
+
+              const storedEvent = data.find(event => event._id === id);
+
+              editFormEl.style.display = 'block';
+
+              const titleInput = editFormEl.querySelector('input[name="title"]');
+              const locationInput = editFormEl.querySelector('input[name="location"]');
+              const dateInput = editFormEl.querySelector('input[name="date"]');
+              const timeInput = editFormEl.querySelector('input[name="time"]');
+
+              titleInput.value = storedEvent.title;
+              locationInput.value = storedEvent.location;
+              dateInput.value = storedEvent.date;
+              timeInput.value = storedEvent.time;
+
+              editFormSubmit.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                const formData = new FormData(editFormEl);
+
+                const formDataObject = Object.fromEntries(formData.entries());
+                const formDataJsonString = JSON.stringify(formDataObject);
+
+                // fetch request to edit endpoint
+                fetch(`http://localhost:5000/${id}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: formDataJsonString,
+                })
+                  .then(response => response.json())
+                  .then(data => {
+                    console.log(data);
+
+                    editFormEl.reset();
+                    editFormEl.style.display = 'none';
+
+                    readEvents();
+                  })
+                  .catch(err => console.log(err));
+              })
             })
           })
         })
@@ -115,14 +202,11 @@
 
     readEvents();
 
-    const formEl = document.querySelector('form');
-    const formSubmit = document.querySelector('button');
-
-    formSubmit.addEventListener('click', (e) => {
+    createFormSubmit.addEventListener('click', (e) => {
 
       e.preventDefault();
 
-      const formData = new FormData(formEl);
+      const formData = new FormData(createFormEl);
       const data = new URLSearchParams(formData);
 
       fetch('http://localhost:5000/create-event', {
@@ -136,7 +220,7 @@
         .then(data => {
           console.log(data);
 
-          formEl.reset();
+          createFormEl.reset();
 
           readEvents();
         })
