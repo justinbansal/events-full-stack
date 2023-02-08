@@ -64,6 +64,32 @@
 
 <body>
 
+  <form action="/login" method="post">
+    <label for="username">Username</label>
+    <input type="text" name="username" required>
+
+    <label for="password">Password</label>
+    <input type="password" name="password" required>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <form class="register-form">
+    <label for="firstname">First name</label>
+    <input type="text" name="firstName" required>
+
+    <label for="lastname">Last name</label>
+    <input type="text" name="lastName" required>
+
+    <label for="username">Username</label>
+    <input type="text" name="username" required>
+
+    <label for="password">Password</label>
+    <input type="password" name="password" required>
+
+    <button type="submit">Register</button>
+  </form>
+
   <div data-events-placeholder></div>
 
   <form class="create-form">
@@ -321,6 +347,31 @@
         })
         .catch(error => alert(error));
     });
+
+    const registerFormEl = document.querySelector('.register-form');
+    const registerFormSubmit = registerFormEl.querySelector('button');
+
+    registerFormSubmit.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(registerFormEl);
+
+      const formDataObject = Object.fromEntries(formData.entries());
+      const formDataJsonString = JSON.stringify(formDataObject);
+
+      fetch('http://localhost:5000/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: formDataJsonString,
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+        })
+        .catch(err => console.log(err));
+    })
   </script>
 </body>
 

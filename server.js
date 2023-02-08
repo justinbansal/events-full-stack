@@ -3,8 +3,10 @@ const env = require('dotenv');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const app = express();
 const port = 5000;
+
 
 const Event = require('./model/Event');
 const User = require('./model/User');
@@ -117,3 +119,55 @@ app.put('/:id', (req, res) => {
       res.status(400).json(err.message);
     })
 });
+
+handleErrors = function(err) {
+  let errors = { firstName: '', lastName: '', username: '', password: '' };
+
+  // duplicates
+  if (err.code === 11000) {
+    errors.username = 'That username is already registered';
+    return errors;
+  }
+
+  // validation errors
+  if (err.message.includes('User validation failed')) {
+    console.log('yes')
+    Object.values(err.errors).forEach(({ properties }) => {
+      errors[properties.path] = properties.message;
+    });
+  }
+
+  return errors;
+}
+
+app.post('/register', (req, res) => {
+  const { firstName, lastName, username, password } = req.body;
+
+  User.create({
+    firstName,lastName, username, password,
+  })
+  .then(result => {
+    // console.log(result);
+
+    res.status(201).json(result);
+  })
+  .catch(err => {
+    const errors = handleErrors(err);
+    res.status(400).json(errors);
+    console.log(errors);
+  });
+
+  // get user input
+  // validate it
+  // validate if user already exists
+  // encrypt password
+  // create user
+  // create a signed JWT token
+})
+
+app.post('/login', (req, res) => {
+  // login logic
+})
+
+// JWT to sign the credentials and bcrypt to encrypt the password
+
