@@ -17,7 +17,8 @@ const eventSchema = new Schema({
   time: {
     type: String,
     required: true,
-  }
+  },
+  users: [],
 });
 
 const Event = mongoose.model('Event', eventSchema);

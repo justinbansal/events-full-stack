@@ -37,6 +37,28 @@
       max-width: 100%;
     }
 
+    .join {
+      border: 1px solid crimson;
+      border-radius: 50%;
+      padding: 5px 10px;
+    }
+
+    .join:hover {
+      cursor: pointer;
+    }
+
+    .user-list li {
+      list-style: none;
+    }
+
+    .user-list {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      padding: 0;
+      margin: 0;
+    }
+
   </style>
 </head>
 
@@ -77,6 +99,15 @@
   </form>
 
   <script>
+
+    const currentUser = 'user12345';
+
+    // if user logged in, allow them to join events
+    // if joined event, change join button text to 'joined'
+    // if toggle joined event button, removes user from event
+
+    // hardCode current user as user12345
+    // If users array in event obj includes current user adjust text for join btn
 
     const eventsDisplay = document.querySelector('[data-events-placeholder]');
     const createFormEl = document.querySelector('.create-form');
@@ -123,9 +154,27 @@
 
             editBtn.append(editIcon);
 
+            const joinBtn = document.createElement('span');
+            joinBtn.classList.add('join');
+            joinBtn.innerText = 'JOIN';
+
+            if (event.users.includes(currentUser)) {
+              joinBtn.innerText = 'JOINED';
+            };
+
+            const userList = document.createElement('ul');
+            userList.classList.add('user-list');
+            event.users.forEach(user => {
+              const userItem = document.createElement('li');
+              userItem.append(user);
+              userList.append(userItem);
+            });
+
             container.append(heading);
             container.append(deleteBtn);
             container.append(editBtn);
+            container.append(joinBtn);
+            container.append(userList);
 
             eventFragment.append(container);
 
@@ -193,8 +242,54 @@
                     readEvents();
                   })
                   .catch(err => console.log(err));
+              });
+            });
+
+            if (!event.users.includes(currentUser)) {
+              joinBtn.addEventListener('click', (e) => {
+                const icon = e.target;
+                const event = icon.closest('.event');
+                const id = event.id;
+
+                const storedEvent = data.find(event => event._id === id);
+
+                fetch(`http://localhost:5000/join-event/${id}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ userId: 'user12345' }),
+                })
+                  .then(response => response.json())
+                  .then(data => {
+                    readEvents();
+                  })
+                  .catch(err => console.log(err));
               })
-            })
+            } else {
+              joinBtn.addEventListener('click', (e) => {
+                const icon = e.target;
+                const event = icon.closest('.event');
+                const id = event.id;
+
+                const storedEvent = data.find(event => event._id === id);
+
+                fetch(`http://localhost:5000/leave-event/${id}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ userId: 'user12345' }),
+                })
+                  .then(response => response.json())
+                  .then(data => {
+                    readEvents();
+                  })
+                  .catch(err => console.log(err));
+              })
+            }
+
+
           })
         })
         .catch(error => console.log(error));

@@ -7,6 +7,7 @@ const app = express();
 const port = 5000;
 
 const Event = require('./model/Event');
+const User = require('./model/User');
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
@@ -59,6 +60,47 @@ app.delete('/:id', (req, res) => {
     .catch(err => {
       res.status(400).json(err.message);
     })
+});
+
+app.put('/join-event/:id', (req, res) => {
+  const id = req.params.id;
+  const user = req.body.userId;
+  Event.findByIdAndUpdate(id, {
+    users: user,
+  })
+    .then(result => {
+      console.log(result);
+      res.status(200).json('Successfully joined event.');
+    })
+    .catch(err => {
+      res.status(400).json(err.message);
+    });
+});
+
+app.put('/leave-event/:id', (req, res) => {
+  const id = req.params.id;
+  const currentUser = req.body.userId;
+
+  // find event
+  // filter out user from users
+  // set new array
+  Event.findById(id)
+    .then(result => {
+      console.log(result);
+      const users = result.users;
+      const updatedUsers = users.filter(user => user !== currentUser);
+      Event.findByIdAndUpdate(id, {
+        users: updatedUsers,
+      })
+        .then(result => {
+        console.log(result);
+        res.status(200).json('Successfully left event.');
+      })
+        .catch(err => {
+        res.status(400).json(err.message);
+      });
+    })
+    .catch(err => console.log(err));
 });
 
 app.put('/:id', (req, res) => {
