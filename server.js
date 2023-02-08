@@ -1,5 +1,5 @@
 // This is going to be the backend server file
-
+const env = require('dotenv');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -9,11 +9,13 @@ const port = 5000;
 const Event = require('./model/Event');
 const User = require('./model/User');
 
+env.config();
+
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const dbURI = 'mongodb+srv://events:test12345@fullstack.icomaol.mongodb.net/?retryWrites=true&w=majority';
+const dbURI = process.env.DB_URI;
 
 // Connection to MongoDB
 mongoose.connect(dbURI)
@@ -115,12 +117,3 @@ app.put('/:id', (req, res) => {
       res.status(400).json(err.message);
     })
 });
-
-
-
-// endpoints
-
-// read
-// create
-// delete
-// edit
